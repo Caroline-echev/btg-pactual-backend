@@ -9,21 +9,24 @@ import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.math.BigDecimal;
 
+import static com.btg.pactual.funds_management.adapter.driven.mongo.util.DocumentConstants.*;
 
-@Document(collection = "fund")
+
+@Document(collection = COLLECTION_NAME_FUND)
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
 public class FundDocument {
     @Id
+    @Field(ID_FIELD)
     private String id;
 
-    @Field("name")
+    @Field(NAME_FIELD)
     private String name;
 
-    @Field("minimum_amount")
+    @Field(MINIMUM_AMOUNT_FIELD_FUND)
     private BigDecimal minimumAmount;
 
-    @Field("category")
+    @Field(CATEGORY_FIELD_FUND)
     private String category;
 }

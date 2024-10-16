@@ -4,7 +4,8 @@ server:
 spring:
   data:
     mongodb:
-      uri: mongodb+srv://carolinaechev:DCEC1234@fundsmanagementdb.orctg.mongodb.net/FundsManagementDB?retryWrites=true&w=majority&appName=FundsManagementDB
+      uri: mongodb+srv://carolinaechev:DCEC1234@fundsmanagementdb.orctg.mongodb.net/fundsmanagementdb?retryWrites=true&w=majority&appName=FundsManagementDB";
+
   autoconfigure:
     exclude:
       - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
