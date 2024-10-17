@@ -33,19 +33,38 @@ public class UserUseCase implements IUserServicePort {
                 .map(fundId -> transactionPersistencePort
                         .findTransactionsByUserIdAndFundIdAndType(userId, fundId, TransactionType.SUBSCRIPTION.name())).toList();
 
-        return buildSubscription(user,funds, transactions);
+        if(transactions.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return buildSubscription(user.getId(),funds, transactions);
 
     }
-    private List<Subscription> buildSubscription(User user, List<Fund> funds, List<Transaction> transactions) {
+
+    @Override
+    public List<Subscription> getTransactionsByUserId(String userId) {
+        List<Transaction> transactions = transactionPersistencePort
+                .findTransactionByUserId(userId);
+        List<String> fundIds = transactions.stream()
+                .map(Transaction::getFundId)
+                .distinct()
+                .collect(Collectors.toList());
+        List<Fund> funds = fundPersistencePort.findByIds(fundIds);
+        return buildSubscription( userId, funds, transactions);
+    }
+
+    private List<Subscription> buildSubscription(String userId, List<Fund> funds, List<Transaction> transactions) {
         List<Subscription> subscriptions = new ArrayList<>();
         Map<String, Fund> fundMap = funds.stream()
                 .collect(Collectors.toMap(Fund::getId, fund -> fund));
 
         for (Transaction transaction : transactions) {
+            if (transaction == null) {
+                continue;
+            }
             Fund fund = fundMap.get(transaction.getFundId());
             if (fund != null) {
                 Subscription subscription = new Subscription(
-                        user.getId(),
+                        userId,
                         fund.getId(),
                         fund.getName(),
                         transaction.getAmount(),
@@ -55,7 +74,6 @@ public class UserUseCase implements IUserServicePort {
                 subscriptions.add(subscription);
             }
         }
-
         return subscriptions;
     }
 

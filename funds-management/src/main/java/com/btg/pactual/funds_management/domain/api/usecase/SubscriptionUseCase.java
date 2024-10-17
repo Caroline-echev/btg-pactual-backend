@@ -13,6 +13,7 @@ import com.btg.pactual.funds_management.domain.util.TransactionType;
 import lombok.RequiredArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -98,6 +99,7 @@ public class SubscriptionUseCase implements ISubscriptionServicePort {
         transaction.setFundId(fund.getId());
         transaction.setAmount(amount);
         transaction.setTransactionType(transactionType);
+        transaction.setDateTime(LocalDateTime.now());
         return transaction;
     }
     private User updateUserSubscribe(User user, Fund fund, BigDecimal amount) {
@@ -105,11 +107,10 @@ public class SubscriptionUseCase implements ISubscriptionServicePort {
         user.getSubscriptions().add(fund.getId());
         return user;
     }
+
     private User updateUserUnsubscribe(User user, Fund fund, BigDecimal amount) {
         user.setInitialBalance(user.getInitialBalance().add(amount));
-        List<String> subscriptions = new ArrayList<>(user.getSubscriptions());
-        subscriptions.remove(fund);
-        user.setSubscriptions(subscriptions);
+        user.getSubscriptions().remove(fund.getId());
         return user;
     }
 

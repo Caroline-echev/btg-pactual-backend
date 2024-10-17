@@ -6,6 +6,8 @@ import com.btg.pactual.funds_management.domain.model.Transaction;
 import com.btg.pactual.funds_management.domain.spi.ITransactionPersistencePort;
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 public class TransactionPersistenceAdapter implements ITransactionPersistencePort {
     private final ITransactionRepository transactionRepository;
@@ -20,4 +22,9 @@ public class TransactionPersistenceAdapter implements ITransactionPersistencePor
     @Override
     public Transaction findTransactionsByUserIdAndFundIdAndType(String userId, String fundId, String type) {
         return transactionDocumentMapper.mapToModel(transactionRepository.findByUserIdAndFundIdAndTransactionType(userId, fundId, type));}
+
+    @Override
+    public List<Transaction> findTransactionByUserId(String userId) {
+        return transactionRepository.findByUserId(userId).stream().map(transactionDocumentMapper::mapToModel).toList();
+    }
 }

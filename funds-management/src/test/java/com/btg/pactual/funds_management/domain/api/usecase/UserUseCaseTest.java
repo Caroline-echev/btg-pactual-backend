@@ -77,4 +77,36 @@ class UserUseCaseTest {
             userUseCase.getSubscriptionsByUserId(USER_ID);
         });
     }
+    @Test
+    void testGetTransactionsByUserId() {
+        when(transactionPersistencePort.findTransactionByUserId(USER_ID)).thenReturn(transactions);
+        when(fundPersistencePort.findByIds(anyList())).thenReturn(funds);
+
+        List<Subscription> subscriptions = userUseCase.getTransactionsByUserId(USER_ID);
+
+        assertNotNull(subscriptions);
+        assertEquals(2, subscriptions.size());
+        assertEquals(NAME_FUND_A, subscriptions.get(0).getFundName());
+        assertEquals(NAME_FUND_B, subscriptions.get(1).getFundName());
+
+        verify(transactionPersistencePort).findTransactionByUserId(USER_ID);
+        verify(fundPersistencePort).findByIds(anyList());
+    }
+
+    @Test
+    void testGetSubscriptionsByUserId_EmptyTransactions() {
+        when(userPersistencePort.findById(USER_ID)).thenReturn(user);
+        when(fundPersistencePort.findByIds(user.getSubscriptions())).thenReturn(funds);
+        when(transactionPersistencePort.findTransactionsByUserIdAndFundIdAndType(anyString(), anyString(), eq("SUBSCRIPTION"))).thenReturn(null);
+
+        List<Subscription> subscriptions = userUseCase.getSubscriptionsByUserId(USER_ID);
+
+        assertTrue(subscriptions.isEmpty());
+
+        verify(userPersistencePort).findById(USER_ID);
+        verify(fundPersistencePort).findByIds(user.getSubscriptions());
+        verify(transactionPersistencePort, times(user.getSubscriptions().size())).findTransactionsByUserIdAndFundIdAndType(anyString(), anyString(), eq("SUBSCRIPTION"));
+    }
+
+
 }
