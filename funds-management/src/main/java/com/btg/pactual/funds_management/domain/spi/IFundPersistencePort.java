@@ -7,4 +7,5 @@ import java.util.List;
 public interface IFundPersistencePort{
     List<Fund> findAll();
     List<Fund> findByCategory(String category);
+    Fund findById(String fundId);
 }

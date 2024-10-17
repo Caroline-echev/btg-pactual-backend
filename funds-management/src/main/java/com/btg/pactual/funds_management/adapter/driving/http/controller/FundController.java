@@ -12,13 +12,13 @@ import java.util.List;
 import static com.btg.pactual.funds_management.adapter.driving.http.util.ApiConstants.*;
 
 @RestController
-@RequestMapping(API_BASE_PATH)
+@RequestMapping("/api/v1/funds/")
 @RequiredArgsConstructor
 public class FundController {
     private final IFundServicePort fundServicePort;
     private final IFundDtoMapper fundDtoMapper;
 
-    @GetMapping("/")
+    @GetMapping
     public ResponseEntity<List<FundResponse>> getFunds(
             @RequestParam(required = false, name = CATEGORY_PARAM) String category,
             @RequestParam(defaultValue = DEFAULT_ORDER_BY_NAME, name = ORDER_BY_NAME_PARAM) boolean orderByName,

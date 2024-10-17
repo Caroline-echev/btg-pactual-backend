@@ -25,4 +25,10 @@ public class FundPersistenceAdapter implements IFundPersistencePort {
     public List<Fund> findByCategory(String category) {
         return fundRepository.findByCategory(category).stream().map(fundDocumentMapper::mapToModel).toList();
     }
+
+    @Override
+    public Fund findById(String fundId) {
+        FundDocument fund = fundRepository.findById(fundId).orElse(null);
+        return fundDocumentMapper.mapToModel(fund);
+    }
 }

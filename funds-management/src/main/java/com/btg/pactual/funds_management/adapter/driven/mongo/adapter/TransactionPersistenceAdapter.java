@@ -1,0 +1,19 @@
+package com.btg.pactual.funds_management.adapter.driven.mongo.adapter;
+
+import com.btg.pactual.funds_management.adapter.driven.mongo.mapper.ITransactionDocumentMapper;
+import com.btg.pactual.funds_management.adapter.driven.mongo.repository.ITransactionRepository;
+import com.btg.pactual.funds_management.domain.model.Transaction;
+import com.btg.pactual.funds_management.domain.spi.ITransactionPersistencePort;
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
+public class TransactionPersistenceAdapter implements ITransactionPersistencePort {
+    private final ITransactionRepository transactionRepository;
+    private final ITransactionDocumentMapper transactionDocumentMapper;
+
+
+    @Override
+    public Transaction save(Transaction transaction) {
+        return transactionDocumentMapper.mapToModel(transactionRepository.save(transactionDocumentMapper.mapToDocument(transaction)));
+    }
+}
