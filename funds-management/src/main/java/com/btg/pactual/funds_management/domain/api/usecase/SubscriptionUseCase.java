@@ -13,6 +13,8 @@ import com.btg.pactual.funds_management.domain.util.TransactionType;
 import lombok.RequiredArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.btg.pactual.funds_management.domain.util.DomainConstants.*;
 
@@ -47,8 +49,8 @@ public class SubscriptionUseCase implements ISubscriptionServicePort {
         Transaction transaction = transactionPersistencePort.findTransactionsByUserIdAndFundIdAndType(userId, fundId, TransactionType.SUBSCRIPTION.name());
         User newUser = updateUserUnsubscribe(user, fund, transaction.getAmount());
         userPersistencePort.save(newUser);
-        Transaction newTransaction = buildTransaction(user, fund, transaction.getAmount(), TransactionType.CANCELLATION.name());
-        transactionPersistencePort.save(newTransaction);
+        transaction.setTransactionType(TransactionType.CANCELLATION.name());
+        transactionPersistencePort.save(transaction);
         sendNotification(user, isSMS, UNSUBSCRIBE_SUCCESSFUL + fund.getName() + THANKS);
     }
     private void sendNotification(User user, Boolean isSMS, String message) {
@@ -105,7 +107,9 @@ public class SubscriptionUseCase implements ISubscriptionServicePort {
     }
     private User updateUserUnsubscribe(User user, Fund fund, BigDecimal amount) {
         user.setInitialBalance(user.getInitialBalance().add(amount));
-        user.getSubscriptions().remove(fund.getId());
+        List<String> subscriptions = new ArrayList<>(user.getSubscriptions());
+        subscriptions.remove(fund);
+        user.setSubscriptions(subscriptions);
         return user;
     }
 

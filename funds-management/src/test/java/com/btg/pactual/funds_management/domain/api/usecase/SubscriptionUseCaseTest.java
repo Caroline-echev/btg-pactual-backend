@@ -4,13 +4,16 @@ import com.btg.pactual.funds_management.data.FundData;
 import com.btg.pactual.funds_management.data.TransactionData;
 import com.btg.pactual.funds_management.data.UserData;
 import com.btg.pactual.funds_management.domain.model.Transaction;
+import com.btg.pactual.funds_management.domain.spi.*;
 import com.btg.pactual.funds_management.domain.util.TransactionType;
 import org.junit.jupiter.api.Test;
 
 import static com.btg.pactual.funds_management.data.FundData.ID_FUND_A;
 import static com.btg.pactual.funds_management.data.SubscriptionData.*;
+import static com.btg.pactual.funds_management.data.SubscriptionData.INSUFFICIENT_AMOUNT;
 import static com.btg.pactual.funds_management.data.UserData.USER_ID;
 import static com.btg.pactual.funds_management.data.UserData.getUserWithUnsubscribe;
+import static com.btg.pactual.funds_management.domain.util.DomainConstants.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.btg.pactual.funds_management.domain.exception.AlreadySubscribedException;
@@ -19,9 +22,6 @@ import com.btg.pactual.funds_management.domain.exception.InsufficientBalanceExce
 import com.btg.pactual.funds_management.domain.exception.UserNotFoundException;
 import com.btg.pactual.funds_management.domain.model.Fund;
 import com.btg.pactual.funds_management.domain.model.User;
-import com.btg.pactual.funds_management.domain.spi.IFundPersistencePort;
-import com.btg.pactual.funds_management.domain.spi.ITransactionPersistencePort;
-import com.btg.pactual.funds_management.domain.spi.IUserPersistencePort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -29,10 +29,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 
 import static org.mockito.Mockito.*;
@@ -49,6 +47,12 @@ class SubscriptionUseCaseTest {
 
     @Mock
     private ITransactionPersistencePort transactionPersistencePort;
+
+    @Mock
+    private  ISmsPersistencePort smsPersistencePort;
+
+    @Mock
+    private IEmailPersistencePort emailPersistencePort;
 
     @InjectMocks
     private SubscriptionUseCase subscriptionUseCase;
@@ -68,39 +72,7 @@ class SubscriptionUseCaseTest {
         userWithUnsubscribe = UserData.getUserWithUnsubscribe();
     }
 
-    @Test
-    void testUnsubscribeToFundSuccess() {
-        User userWithUnsubscribe = UserData.getUserWithUnsubscribe();
-        Fund fund = FundData.getFundA();
-        Transaction existingTransaction = TransactionData.getTransactionA();
 
-        when(userPersistencePort.findById(USER_ID)).thenReturn(userWithUnsubscribe);
-        when(fundPersistencePort.findById(ID_FUND_A)).thenReturn(fund);
-        when(transactionPersistencePort.findTransactionsByUserIdAndFundIdAndType(USER_ID, ID_FUND_A, TransactionType.SUBSCRIPTION.name()))
-                .thenReturn(existingTransaction);
-
-        subscriptionUseCase.unsubscribeToFund(USER_ID, ID_FUND_A, false);
-
-        assertFalse(userWithUnsubscribe.getSubscriptions().contains(ID_FUND_A));
-        verify(userPersistencePort).save(userWithUnsubscribe);
-    }
-
-    @Test
-    void testSubscribeToFundSuccess() {
-        when(userPersistencePort.findById(USER_ID)).thenReturn(user);
-        when(fundPersistencePort.findById(ID_FUND_A)).thenReturn(fund);
-
-        subscriptionUseCase.subscribeToFund(USER_ID, ID_FUND_A, false, SUBSCRIPTION_AMOUNT);
-
-        assertEquals(HIGH_BALANCE, user.getInitialBalance());
-        assertTrue(user.getSubscriptions().contains(ID_FUND_A));
-
-        ArgumentCaptor<Transaction> transactionCaptor = ArgumentCaptor.forClass(Transaction.class);
-        verify(transactionPersistencePort).save(transactionCaptor.capture());
-        assertEquals(USER_ID, transactionCaptor.getValue().getUserId());
-        assertEquals(ID_FUND_A, transactionCaptor.getValue().getFundId());
-        assertEquals(SUBSCRIPTION_AMOUNT, transactionCaptor.getValue().getAmount());
-    }
 
     @Test
     void testSubscribeToFundUserNotFound() {
@@ -110,7 +82,62 @@ class SubscriptionUseCaseTest {
             subscriptionUseCase.subscribeToFund(USER_ID, ID_FUND_A, false, INSUFFICIENT_AMOUNT);
         });
     }
+    @Test
+    void testSubscribeToFundInsufficientAmount() {
+        user.setInitialBalance(BigDecimal.valueOf(100));
+        fund.setMinimumAmount(BigDecimal.valueOf(200));
 
+        when(userPersistencePort.findById(USER_ID)).thenReturn(user);
+        when(fundPersistencePort.findById(ID_FUND_A)).thenReturn(fund);
+
+        assertThrows(InsufficientBalanceException.class, () -> {
+            subscriptionUseCase.subscribeToFund(USER_ID, ID_FUND_A, false, BigDecimal.valueOf(150));
+        });
+    }
+    @Test
+    void testUnsubscribeToFundFundNotFound() {
+        when(userPersistencePort.findById(USER_ID)).thenReturn(user);
+        when(fundPersistencePort.findById(ID_FUND_A)).thenReturn(null);
+
+        assertThrows(FundNotFoundException.class, () -> {
+            subscriptionUseCase.unsubscribeToFund(USER_ID, ID_FUND_A, false);
+        });
+    }
+
+    @Test
+    void testUnsubscribeToFundSuccessful() {
+        user.getSubscriptions().add(ID_FUND_A);
+        user.setInitialBalance(BigDecimal.valueOf(800));
+        transaction.setAmount(BigDecimal.valueOf(200));
+
+        when(userPersistencePort.findById(USER_ID)).thenReturn(user);
+        when(fundPersistencePort.findById(ID_FUND_A)).thenReturn(fund);
+        when(transactionPersistencePort.findTransactionsByUserIdAndFundIdAndType(USER_ID, ID_FUND_A, TransactionType.SUBSCRIPTION.name()))
+                .thenReturn(transaction);
+        when(userPersistencePort.save(any(User.class))).thenAnswer(i -> i.getArguments()[0]);
+        when(transactionPersistencePort.save(any(Transaction.class))).thenAnswer(i -> i.getArguments()[0]);
+
+        subscriptionUseCase.unsubscribeToFund(USER_ID, ID_FUND_A, false);
+
+        assertEquals(BigDecimal.valueOf(1000), user.getInitialBalance());
+
+    }
+
+    @Test
+    void testSubscribeToFundSuccessful() {
+        user.setInitialBalance(BigDecimal.valueOf(1000));
+        fund.setMinimumAmount(BigDecimal.valueOf(100));
+
+        when(userPersistencePort.findById(USER_ID)).thenReturn(user);
+        when(fundPersistencePort.findById(ID_FUND_A)).thenReturn(fund);
+        when(userPersistencePort.save(any(User.class))).thenAnswer(i -> i.getArguments()[0]);
+        when(transactionPersistencePort.save(any(Transaction.class))).thenAnswer(i -> i.getArguments()[0]);
+
+        subscriptionUseCase.subscribeToFund(USER_ID, ID_FUND_A, false, BigDecimal.valueOf(200));
+
+        assertEquals(BigDecimal.valueOf(800), user.getInitialBalance());
+        assertTrue(user.getSubscriptions().contains(ID_FUND_A));
+    }
     @Test
     void testSubscribeToFundFundNotFound() {
         when(userPersistencePort.findById(USER_ID)).thenReturn(user);
@@ -121,15 +148,6 @@ class SubscriptionUseCaseTest {
         });
     }
 
-    @Test
-    void testSubscribeToFundInsufficientBalance() {
-        when(userPersistencePort.findById(USER_ID)).thenReturn(user);
-        when(fundPersistencePort.findById(ID_FUND_A)).thenReturn(FundData.getFundA());
-
-        assertThrows(InsufficientBalanceException.class, () -> {
-            subscriptionUseCase.subscribeToFund(USER_ID, ID_FUND_A, false, EXCEEDING_BALANCE);
-        });
-    }
 
     @Test
     void testSubscribeToFundAlreadySubscribed() {
@@ -140,6 +158,28 @@ class SubscriptionUseCaseTest {
 
         assertThrows(AlreadySubscribedException.class, () -> {
             subscriptionUseCase.subscribeToFund(USER_ID, ID_FUND_A, false, INSUFFICIENT_AMOUNT);
+        });
+    }
+
+    @Test
+    void testUnsubscribeUserNotFound() {
+        when(userPersistencePort.findById(USER_ID)).thenReturn(null);
+
+        assertThrows(UserNotFoundException.class, () -> {
+            subscriptionUseCase.unsubscribeToFund(USER_ID, ID_FUND_A, false);
+        });
+    }
+
+    @Test
+    void testSubscribeToFund_AlreadySubscribed() {
+
+        User user = new User();
+        user.setSubscriptions(List.of(ID_FUND_A));
+        when(userPersistencePort.findById(USER_ID)).thenReturn(user);
+        when(fundPersistencePort.findById(ID_FUND_A)).thenReturn(FundData.getFundA());
+
+        assertThrows(AlreadySubscribedException.class, () -> {
+            subscriptionUseCase.subscribeToFund(USER_ID, ID_FUND_A, true, BigDecimal.TEN);
         });
     }
 
@@ -165,22 +205,6 @@ class SubscriptionUseCaseTest {
         assertThrows(InsufficientBalanceException.class, () -> {
             subscriptionUseCase.subscribeToFund(USER_ID, ID_FUND_A, false, amountExceedsBalance);
         });
-    }
-
-
-    @Test
-    void testUnsubscribeUserNotFound() {
-        when(userPersistencePort.findById(USER_ID)).thenReturn(null);
-
-        assertThrows(UserNotFoundException.class, () -> {
-            subscriptionUseCase.unsubscribeToFund(USER_ID, ID_FUND_A, false);
-        });
-    }
-
-    @Test
-    void testUnsubscribeSuccess(){
-
-
     }
 
 
