@@ -20,7 +20,7 @@ public class SubscriptionRequest {
     @NotBlank(message = FUND_ID_BLANK_MESSAGE)
     private String fundId;
     @NotNull(message = SMS_OR_EMAIL_NOTIFICATION)
-    private boolean isSMS;
+    private Boolean isSMS;
     @NotNull(message = AMOUNT_NOT_NULL_MESSAGE)
     @DecimalMin(value = AMOUNT_MIN_VALUE, message = AMOUNT_POSITIVE_MESSAGE)
     private BigDecimal amount;

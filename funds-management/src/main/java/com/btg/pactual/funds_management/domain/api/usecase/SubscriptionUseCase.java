@@ -8,9 +8,7 @@ import com.btg.pactual.funds_management.domain.exception.UserNotFoundException;
 import com.btg.pactual.funds_management.domain.model.Fund;
 import com.btg.pactual.funds_management.domain.model.Transaction;
 import com.btg.pactual.funds_management.domain.model.User;
-import com.btg.pactual.funds_management.domain.spi.IFundPersistencePort;
-import com.btg.pactual.funds_management.domain.spi.ITransactionPersistencePort;
-import com.btg.pactual.funds_management.domain.spi.IUserPersistencePort;
+import com.btg.pactual.funds_management.domain.spi.*;
 import com.btg.pactual.funds_management.domain.util.TransactionType;
 import lombok.RequiredArgsConstructor;
 
@@ -24,23 +22,26 @@ public class SubscriptionUseCase implements ISubscriptionServicePort {
     private final IUserPersistencePort userPersistencePort;
     private final IFundPersistencePort fundPersistencePort;
     private final ITransactionPersistencePort transactionPersistencePort;
+    private final ISmsPersistencePort smsPersistencePort;
+    private final IEmailPersistencePort emailPersistencePort;
 
     @Override
-    public void subscribeToFund(String userId, String fundId, boolean isSMS, BigDecimal amount) {
+    public void subscribeToFund(String userId, String fundId, Boolean isSMS, BigDecimal amount) {
         User user = findUser(userId);
         Fund fund = findFund(fundId);
         validateSubscription(user, fund);
-        validateAmount( user, fund, amount);
+        validateAmount( user, fund, amount, isSMS);
         User newUser = updateUserSubscribe(user, fund, amount);
         userPersistencePort.save(newUser);
         Transaction transaction = buildTransaction(user, fund, amount, TransactionType.SUBSCRIPTION.name());
         transactionPersistencePort.save(transaction);
+        sendNotification(user, isSMS, SUBSCRIPTION_SUCCESSFUL + fund.getName() + THANKS);
 
 
     }
 
     @Override
-    public void unsubscribeToFund(String userId, String fundId, boolean isSMS) {
+    public void unsubscribeToFund(String userId, String fundId, Boolean isSMS) {
         User user = findUser(userId);
         Fund fund = findFund(fundId);
         Transaction transaction = transactionPersistencePort.findTransactionsByUserIdAndFundIdAndType(userId, fundId, TransactionType.SUBSCRIPTION.name());
@@ -48,6 +49,15 @@ public class SubscriptionUseCase implements ISubscriptionServicePort {
         userPersistencePort.save(newUser);
         Transaction newTransaction = buildTransaction(user, fund, transaction.getAmount(), TransactionType.CANCELLATION.name());
         transactionPersistencePort.save(newTransaction);
+        sendNotification(user, isSMS, UNSUBSCRIBE_SUCCESSFUL + fund.getName() + THANKS);
+    }
+    private void sendNotification(User user, Boolean isSMS, String message) {
+        if (isSMS) {
+            smsPersistencePort.sendMessageSms(user.getPhone(), message);
+        }else{
+            emailPersistencePort.sendEmail(user.getEmail(), SUBJECT_EMAIL, message);
+        }
+
     }
 
     private void validateSubscription(User user, Fund fund) {
@@ -69,12 +79,14 @@ public class SubscriptionUseCase implements ISubscriptionServicePort {
         }
         return fund;
     }
-    private void validateAmount(User user, Fund fund, BigDecimal amount) {
+    private void validateAmount(User user, Fund fund, BigDecimal amount, Boolean isSMS) {
         if (amount.compareTo(fund.getMinimumAmount()) < VALIDATION_MINIMUM_AMOUNT_ZERO) {
+            sendNotification(user, isSMS, INSUFFICIENT_AMOUNT + fund.getName());
             throw new InsufficientBalanceException(INSUFFICIENT_AMOUNT + fund.getName());
         }
 
         if (amount.compareTo(user.getInitialBalance()) > VALIDATION_MINIMUM_AMOUNT_ZERO) {
+            sendNotification(user, isSMS, INSUFFICIENT_AMOUNT + fund.getName());
             throw new InsufficientBalanceException(INSUFFICIENT_BALANCE + fund.getName());
         }
     }

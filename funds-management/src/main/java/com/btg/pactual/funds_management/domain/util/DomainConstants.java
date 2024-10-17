@@ -11,5 +11,9 @@ public class DomainConstants {
     public static final String INSUFFICIENT_BALANCE = "No tiene saldo disponible para vincularse al fondo ";
     public  static final String ALREADY_SUBSCRIBED_EXCEPTION_MESSAGE = "El usuario ya está suscrito al fondo: ";
     public static final String INSUFFICIENT_AMOUNT = "No cumple con el monto mínimo del fondo: ";
+    public static final String SUBSCRIPTION_SUCCESSFUL = "¡Se ha suscrito satisfactoriamente al fondo ";;
+    public static final String UNSUBSCRIBE_SUCCESSFUL = "¡Se ha desuscrito satisfactoriamente al fondo ";
+    public static final String THANKS = " Gracias por confiar en nosotros.";
     public static final int VALIDATION_MINIMUM_AMOUNT_ZERO = 0;
+    public static final String SUBJECT_EMAIL = "Notificacion BTG Pactual";
 }

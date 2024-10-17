@@ -1,5 +1,6 @@
 package com.btg.pactual.funds_management.configuration;
 
+import com.btg.pactual.funds_management.adapter.driven.email.adapter.EmailPersistenceAdapter;
 import com.btg.pactual.funds_management.adapter.driven.mongo.adapter.FundPersistenceAdapter;
 import com.btg.pactual.funds_management.adapter.driven.mongo.adapter.TransactionPersistenceAdapter;
 import com.btg.pactual.funds_management.adapter.driven.mongo.adapter.UserPersistenceAdapter;
@@ -9,18 +10,18 @@ import com.btg.pactual.funds_management.adapter.driven.mongo.mapper.IUserDocumen
 import com.btg.pactual.funds_management.adapter.driven.mongo.repository.IFundRepository;
 import com.btg.pactual.funds_management.adapter.driven.mongo.repository.ITransactionRepository;
 import com.btg.pactual.funds_management.adapter.driven.mongo.repository.IUserRepository;
+import com.btg.pactual.funds_management.adapter.driven.twilio.adapter.SmsPersistenceAdapter;
 import com.btg.pactual.funds_management.domain.api.IFundServicePort;
 import com.btg.pactual.funds_management.domain.api.ISubscriptionServicePort;
 import com.btg.pactual.funds_management.domain.api.IUserServicePort;
 import com.btg.pactual.funds_management.domain.api.usecase.FundUseCase;
 import com.btg.pactual.funds_management.domain.api.usecase.SubscriptionUseCase;
 import com.btg.pactual.funds_management.domain.api.usecase.UserUseCase;
-import com.btg.pactual.funds_management.domain.spi.IFundPersistencePort;
-import com.btg.pactual.funds_management.domain.spi.ITransactionPersistencePort;
-import com.btg.pactual.funds_management.domain.spi.IUserPersistencePort;
+import com.btg.pactual.funds_management.domain.spi.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.mail.javamail.JavaMailSender;
 
 @Configuration
 @RequiredArgsConstructor
@@ -31,6 +32,7 @@ public class BeanConfiguration {
     private final ITransactionDocumentMapper transactionDocumentMapper;
     private final IUserRepository userRepository;
     private final IUserDocumentMapper userDocumentMapper;
+    private final JavaMailSender javaMailSender;
 
     @Bean
     public IFundPersistencePort fundPersistencePort() {
@@ -58,6 +60,16 @@ public class BeanConfiguration {
     }
     @Bean
     public ISubscriptionServicePort subscriptionServicePort() {
-        return new SubscriptionUseCase(userPersistencePort(), fundPersistencePort(), transactionPersistencePort());
+        return new SubscriptionUseCase(userPersistencePort(), fundPersistencePort(), transactionPersistencePort(),
+                notificationPersistencePort(), emailPersistencePort() );
+    }
+    @Bean
+    public ISmsPersistencePort notificationPersistencePort() {
+        return new SmsPersistenceAdapter();
+    }
+
+    @Bean
+    public IEmailPersistencePort emailPersistencePort() {
+        return new EmailPersistenceAdapter(javaMailSender);
     }
 }

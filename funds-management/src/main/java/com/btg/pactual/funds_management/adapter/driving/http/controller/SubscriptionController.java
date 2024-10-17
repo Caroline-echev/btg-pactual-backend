@@ -18,7 +18,7 @@ public class SubscriptionController {
 
     @PostMapping("/subscribe")
     public ResponseEntity subscribe(@RequestBody @Valid SubscriptionRequest suscriptionRequest) {
-        subscriptionServicePort.subscribeToFund(suscriptionRequest.getUserId(), suscriptionRequest.getFundId(), suscriptionRequest.isSMS(), suscriptionRequest.getAmount());
+        subscriptionServicePort.subscribeToFund(suscriptionRequest.getUserId(), suscriptionRequest.getFundId(), suscriptionRequest.getIsSMS(), suscriptionRequest.getAmount());
         return ResponseEntity.ok().build();
     }
 

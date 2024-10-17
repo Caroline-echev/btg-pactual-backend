@@ -32,6 +32,8 @@ dependencies {
 	implementation 'org.mapstruct:mapstruct:1.5.3.Final'
 	implementation('org.springframework.boot:spring-boot-starter-validation')
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
+	implementation 'com.twilio.sdk:twilio:10.4.1'
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
 
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	annotationProcessor 'org.projectlombok:lombok'
