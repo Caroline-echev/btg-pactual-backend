@@ -1,6 +1,7 @@
 package com.btg.pactual.funds_management.adapter.driving.http.controller;
 
 import com.btg.pactual.funds_management.adapter.driving.http.dto.request.SubscriptionRequest;
+import com.btg.pactual.funds_management.adapter.driving.http.dto.request.UnsubscribeRequest;
 import com.btg.pactual.funds_management.adapter.driving.http.mapper.IFundDtoMapper;
 import com.btg.pactual.funds_management.domain.api.ISubscriptionServicePort;
 import jakarta.validation.Valid;
@@ -21,6 +22,11 @@ public class SubscriptionController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/unsubscribe")
+    public ResponseEntity unsubscribe(@RequestBody @Valid UnsubscribeRequest unsubscribeRequest) {
+        subscriptionServicePort.unsubscribeToFund(unsubscribeRequest.getUserId(), unsubscribeRequest.getFundId(), unsubscribeRequest.isSMS());
+        return ResponseEntity.ok().build();
+    }
 
 
 }

@@ -14,9 +14,9 @@ public class UserData {
         return new User("userId", "name", "email", "phone", BigDecimal.valueOf(500), LocalDateTime.now(), new ArrayList<>());
     }
 
-    public static User getUserWithSubscriptions(String userId) {
-        List<String> subscriptions = Arrays.asList(FundData.ID_FUND_A, FundData.ID_FUND_B);
-        return new User("userId", "name", "email", "phone", BigDecimal.valueOf(500), LocalDateTime.now(), subscriptions);
+    public static User getUserWithUnsubscribe() {
+        List<String> subscriptions = Arrays.asList( FundData.ID_FUND_B);
+        return new User("userId", "name", "email", "phone", BigDecimal.valueOf(600), LocalDateTime.now(), subscriptions);
     }
     public static User getUserWithSubscriptions() {
         List<String> subscriptions = Arrays.asList(FundData.ID_FUND_A, FundData.ID_FUND_B);

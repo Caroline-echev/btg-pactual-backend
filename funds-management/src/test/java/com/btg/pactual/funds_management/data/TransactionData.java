@@ -11,6 +11,10 @@ public class TransactionData {
     public static Transaction getTransactionA() {
         return new Transaction("T1", "userId", "1", "SUBSCRIPTION", BigDecimal.valueOf(100), LocalDateTime.now());
     }
+    public static Transaction getTransactionACancel() {
+        return new Transaction("T1", "userId", "1", "CANCELLATION", BigDecimal.valueOf(100), LocalDateTime.now());
+
+    }
 
     public static Transaction getTransactionB() {
         return new Transaction("T2", "userId", "2", "SUBSCRIPTION", BigDecimal.valueOf(200), LocalDateTime.now());

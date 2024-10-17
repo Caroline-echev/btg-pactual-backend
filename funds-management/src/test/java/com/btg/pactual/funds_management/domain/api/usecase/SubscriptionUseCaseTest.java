@@ -1,13 +1,16 @@
 package com.btg.pactual.funds_management.domain.api.usecase;
 
 import com.btg.pactual.funds_management.data.FundData;
+import com.btg.pactual.funds_management.data.TransactionData;
 import com.btg.pactual.funds_management.data.UserData;
 import com.btg.pactual.funds_management.domain.model.Transaction;
+import com.btg.pactual.funds_management.domain.util.TransactionType;
 import org.junit.jupiter.api.Test;
 
 import static com.btg.pactual.funds_management.data.FundData.ID_FUND_A;
 import static com.btg.pactual.funds_management.data.SubscriptionData.*;
 import static com.btg.pactual.funds_management.data.UserData.USER_ID;
+import static com.btg.pactual.funds_management.data.UserData.getUserWithUnsubscribe;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.btg.pactual.funds_management.domain.exception.AlreadySubscribedException;
@@ -27,6 +30,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -47,11 +55,34 @@ class SubscriptionUseCaseTest {
 
     private User user;
     private Fund fund;
+    private Transaction transaction;
+    private Transaction transactionUnsubscribe;
+    private User userWithUnsubscribe;
 
     @BeforeEach
     public void setup() {
         user = UserData.getUser();
         fund = FundData.getFundA();
+        transaction = TransactionData.getTransactionA();
+        transactionUnsubscribe = TransactionData.getTransactionACancel();
+        userWithUnsubscribe = UserData.getUserWithUnsubscribe();
+    }
+
+    @Test
+    void testUnsubscribeToFundSuccess() {
+        User userWithUnsubscribe = UserData.getUserWithUnsubscribe();
+        Fund fund = FundData.getFundA();
+        Transaction existingTransaction = TransactionData.getTransactionA();
+
+        when(userPersistencePort.findById(USER_ID)).thenReturn(userWithUnsubscribe);
+        when(fundPersistencePort.findById(ID_FUND_A)).thenReturn(fund);
+        when(transactionPersistencePort.findTransactionsByUserIdAndFundIdAndType(USER_ID, ID_FUND_A, TransactionType.SUBSCRIPTION.name()))
+                .thenReturn(existingTransaction);
+
+        subscriptionUseCase.unsubscribeToFund(USER_ID, ID_FUND_A, false);
+
+        assertFalse(userWithUnsubscribe.getSubscriptions().contains(ID_FUND_A));
+        verify(userPersistencePort).save(userWithUnsubscribe);
     }
 
     @Test
@@ -134,6 +165,22 @@ class SubscriptionUseCaseTest {
         assertThrows(InsufficientBalanceException.class, () -> {
             subscriptionUseCase.subscribeToFund(USER_ID, ID_FUND_A, false, amountExceedsBalance);
         });
+    }
+
+
+    @Test
+    void testUnsubscribeUserNotFound() {
+        when(userPersistencePort.findById(USER_ID)).thenReturn(null);
+
+        assertThrows(UserNotFoundException.class, () -> {
+            subscriptionUseCase.unsubscribeToFund(USER_ID, ID_FUND_A, false);
+        });
+    }
+
+    @Test
+    void testUnsubscribeSuccess(){
+
+
     }
 
 
