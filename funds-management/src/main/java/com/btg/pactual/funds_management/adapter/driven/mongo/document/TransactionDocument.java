@@ -31,7 +31,6 @@ public class TransactionDocument {
     @Field("amount")
     private BigDecimal amount;
 
-    @CreatedDate
     @Field("date_time")
     private LocalDateTime dateTime;
 

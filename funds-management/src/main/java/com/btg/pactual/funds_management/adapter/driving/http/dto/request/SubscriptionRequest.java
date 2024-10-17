@@ -14,7 +14,7 @@ import static com.btg.pactual.funds_management.adapter.driving.http.util.DtoCons
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class SuscriptionRequest {
+public class SubscriptionRequest {
     @NotBlank(message = USER_ID_BLANK_MESSAGE)
     private String userId;
     @NotBlank(message = FUND_ID_BLANK_MESSAGE)

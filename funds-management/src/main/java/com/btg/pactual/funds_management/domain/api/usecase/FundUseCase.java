@@ -16,20 +16,11 @@ public class FundUseCase implements IFundServicePort {
 
     @Override
     public List<Fund> getFunds(String category, boolean orderByname, boolean isAsc) {
-        List<Fund> fundDocuments;
-        if (category != null) {
-            fundDocuments = new ArrayList<>(fundPersistencePort.findByCategory(category));
-        } else {
-            fundDocuments = new ArrayList<>(fundPersistencePort.findAll());
-        }
-        if (orderByname) {
-            fundDocuments = filterByName(fundDocuments, isAsc);
-        }else {
-            fundDocuments = filterByAmount(fundDocuments, isAsc);
-        }
+        List<Fund> funds = category != null
+                ? new ArrayList<>(fundPersistencePort.findByCategory(category))
+                : new ArrayList<>(fundPersistencePort.findAll());
 
-
-        return fundDocuments;
+        return orderByname ? filterByName(funds, isAsc) : filterByAmount(funds, isAsc);
     }
 
     private List<Fund> filterByName(List<Fund> funds, boolean isAsc) {

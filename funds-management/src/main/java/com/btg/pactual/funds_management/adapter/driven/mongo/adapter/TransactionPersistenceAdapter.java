@@ -16,4 +16,8 @@ public class TransactionPersistenceAdapter implements ITransactionPersistencePor
     public Transaction save(Transaction transaction) {
         return transactionDocumentMapper.mapToModel(transactionRepository.save(transactionDocumentMapper.mapToDocument(transaction)));
     }
+
+    @Override
+    public Transaction findTransactionsByUserIdAndFundIdAndType(String userId, String fundId, String type) {
+        return transactionDocumentMapper.mapToModel(transactionRepository.findByUserIdAndFundIdAndTransactionType(userId, fundId, type));}
 }

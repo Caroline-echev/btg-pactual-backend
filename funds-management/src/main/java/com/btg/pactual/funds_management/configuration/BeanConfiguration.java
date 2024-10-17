@@ -11,8 +11,10 @@ import com.btg.pactual.funds_management.adapter.driven.mongo.repository.ITransac
 import com.btg.pactual.funds_management.adapter.driven.mongo.repository.IUserRepository;
 import com.btg.pactual.funds_management.domain.api.IFundServicePort;
 import com.btg.pactual.funds_management.domain.api.ISubscriptionServicePort;
+import com.btg.pactual.funds_management.domain.api.IUserServicePort;
 import com.btg.pactual.funds_management.domain.api.usecase.FundUseCase;
 import com.btg.pactual.funds_management.domain.api.usecase.SubscriptionUseCase;
+import com.btg.pactual.funds_management.domain.api.usecase.UserUseCase;
 import com.btg.pactual.funds_management.domain.spi.IFundPersistencePort;
 import com.btg.pactual.funds_management.domain.spi.ITransactionPersistencePort;
 import com.btg.pactual.funds_management.domain.spi.IUserPersistencePort;
@@ -48,6 +50,11 @@ public class BeanConfiguration {
     @Bean
     public IUserPersistencePort userPersistencePort() {
         return new UserPersistenceAdapter(userRepository, userDocumentMapper);
+    }
+
+    @Bean
+    public IUserServicePort userServicePort() {
+        return new UserUseCase(userPersistencePort(), fundPersistencePort(), transactionPersistencePort());
     }
     @Bean
     public ISubscriptionServicePort subscriptionServicePort() {

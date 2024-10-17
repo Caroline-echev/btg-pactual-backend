@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface IFundServicePort {
     List<Fund> getFunds(String category, boolean orderByName, boolean isAsc);
+
 }

@@ -8,4 +8,5 @@ public interface IFundPersistencePort{
     List<Fund> findAll();
     List<Fund> findByCategory(String category);
     Fund findById(String fundId);
+    List<Fund> findByIds(List<String> fundsId);
 }
