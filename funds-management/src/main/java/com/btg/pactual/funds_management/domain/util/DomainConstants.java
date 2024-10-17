@@ -9,4 +9,7 @@ public class DomainConstants {
     public static final String USER_NOT_FOUND_EXCEPTION_MESSAGE = "El usuario no existe";
     public static final String FUND_NOT_FOUND_EXCEPTION_MESSAGE = "El fondo no existe";
     public static final String INSUFFICIENT_BALANCE = "No tiene saldo disponible para vincularse al fondo ";
+    public  static final String ALREADY_SUBSCRIBED_EXCEPTION_MESSAGE = "El usuario ya está suscrito al fondo: ";
+    public static final String INSUFFICIENT_AMOUNT = "No cumple con el monto mínimo del fondo: ";
+    public static final int VALIDATION_MINIMUM_AMOUNT_ZERO = 0;
 }

@@ -18,7 +18,6 @@ import static com.btg.pactual.funds_management.adapter.driven.mongo.util.Documen
 @Data
 public class FundDocument {
     @Id
-    @Field(ID_FIELD)
     private String id;
 
     @Field(NAME_FIELD)

@@ -1,6 +1,7 @@
 package com.btg.pactual.funds_management.configuration.exceptionhandler;
 
 
+import com.btg.pactual.funds_management.domain.exception.AlreadySubscribedException;
 import com.btg.pactual.funds_management.domain.exception.FundNotFoundException;
 import com.btg.pactual.funds_management.domain.exception.InsufficientBalanceException;
 import com.btg.pactual.funds_management.domain.exception.UserNotFoundException;
@@ -41,6 +42,12 @@ public class ControllerAdvisor {
 
     @ExceptionHandler(FundNotFoundException.class)
     public ResponseEntity<ExceptionCodeResponse> handlerFundNotFoundException(FundNotFoundException exception) {
+        return ResponseEntity.badRequest().body(new ExceptionCodeResponse(exception.getMessage(),
+                HttpStatus.BAD_REQUEST.getReasonPhrase(), LocalDateTime.now(), HttpStatus.BAD_REQUEST.value()));
+    }
+
+    @ExceptionHandler(AlreadySubscribedException.class)
+    public ResponseEntity<ExceptionCodeResponse> handlerAlreadySubscribedException(AlreadySubscribedException exception) {
         return ResponseEntity.badRequest().body(new ExceptionCodeResponse(exception.getMessage(),
                 HttpStatus.BAD_REQUEST.getReasonPhrase(), LocalDateTime.now(), HttpStatus.BAD_REQUEST.value()));
     }

@@ -36,24 +36,24 @@ class FundUseCaseTest {
 
         List<Fund> resultFunds = fundUseCase.getFunds(CATEGORY_1, false, true);
 
-        // Then
+
         assertEquals(2, resultFunds.size());
         assertEquals(NAME_FUND_A, resultFunds.get(0).getName());
         verify(fundPersistencePort, times(1)).findByCategory(CATEGORY_1);
     }
     @Test
     void shouldReturnFundsFilteredByCategoryAndOrderedByNameAsc() {
-        // Arrange
+
         List<Fund> funds = FundData.getFunds();
         when(fundPersistencePort.findByCategory(CATEGORY_1)).thenReturn(List.of(
                 funds.get(0),
                 funds.get(2)
         ));
 
-        // Act
+
         List<Fund> resultFunds = fundUseCase.getFunds(CATEGORY_1, true, true);
 
-        // Assert
+
         assertEquals(2, resultFunds.size());
         assertEquals(NAME_FUND_A, resultFunds.get(0).getName());
         assertEquals(NAME_FUND_C, resultFunds.get(1).getName());
@@ -96,4 +96,21 @@ class FundUseCaseTest {
         assertEquals(NAME_FUND_A, resultFunds.get(2).getName());
         verify(fundPersistencePort, times(1)).findAll();
     }
+    @Test
+    void shouldReturnFundsOrderedByNameDesc() {
+        List<Fund> funds = FundData.getFunds();
+        when(fundPersistencePort.findByCategory(CATEGORY_1)).thenReturn(List.of(
+                funds.get(0),
+                funds.get(1),
+                funds.get(2)
+        ));
+
+        List<Fund> resultFunds = fundUseCase.getFunds(CATEGORY_1, true, false);
+
+        assertEquals(NAME_FUND_C, resultFunds.get(0).getName());
+        assertEquals(NAME_FUND_B, resultFunds.get(1).getName());
+        assertEquals(NAME_FUND_A, resultFunds.get(2).getName());
+        verify(fundPersistencePort, times(1)).findByCategory(CATEGORY_1);
+    }
+
 }

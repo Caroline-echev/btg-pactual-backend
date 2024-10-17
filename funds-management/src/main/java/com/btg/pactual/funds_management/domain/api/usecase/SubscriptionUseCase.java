@@ -1,6 +1,7 @@
 package com.btg.pactual.funds_management.domain.api.usecase;
 
 import com.btg.pactual.funds_management.domain.api.ISubscriptionServicePort;
+import com.btg.pactual.funds_management.domain.exception.AlreadySubscribedException;
 import com.btg.pactual.funds_management.domain.exception.InsufficientBalanceException;
 import com.btg.pactual.funds_management.domain.exception.FundNotFoundException;
 import com.btg.pactual.funds_management.domain.exception.UserNotFoundException;
@@ -28,6 +29,7 @@ public class SubscriptionUseCase implements ISubscriptionServicePort {
     public void subscribeToFund(String userId, String fundId, boolean isSMS, BigDecimal amount) {
         User user = findUser(userId);
         Fund fund = findFund(fundId);
+        validateSubscription(user, fund);
         validateAmount( user, fund, amount);
         User newUser = updateUser(user, fund, amount);
         userPersistencePort.save(newUser);
@@ -35,6 +37,11 @@ public class SubscriptionUseCase implements ISubscriptionServicePort {
         transactionPersistencePort.save(transaction);
 
 
+    }
+    private void validateSubscription(User user, Fund fund) {
+        if (user.getSubscriptions().contains(fund.getId())) {
+            throw new AlreadySubscribedException(ALREADY_SUBSCRIBED_EXCEPTION_MESSAGE + fund.getName());
+        }
     }
     private User findUser(String userId) {
         User user = userPersistencePort.findById(userId);
@@ -51,8 +58,12 @@ public class SubscriptionUseCase implements ISubscriptionServicePort {
         return fund;
     }
     private void validateAmount(User user, Fund fund, BigDecimal amount) {
-        if(amount.compareTo(user.getInitialBalance()) > 0 && amount.compareTo(fund.getMinimumAmount()) < 0) {
-            throw new InsufficientBalanceException( INSUFFICIENT_BALANCE + fund.getName());
+        if (amount.compareTo(fund.getMinimumAmount()) < VALIDATION_MINIMUM_AMOUNT_ZERO) {
+            throw new InsufficientBalanceException(INSUFFICIENT_AMOUNT + fund.getName());
+        }
+
+        if (amount.compareTo(user.getInitialBalance()) > VALIDATION_MINIMUM_AMOUNT_ZERO) {
+            throw new InsufficientBalanceException(INSUFFICIENT_BALANCE + fund.getName());
         }
     }
     private Transaction buildTransaction(User user, Fund fund, BigDecimal amount) {

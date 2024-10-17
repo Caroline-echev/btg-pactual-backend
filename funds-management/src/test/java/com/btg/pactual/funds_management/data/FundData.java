@@ -15,6 +15,7 @@ public class FundData {
     public static String  NAME_FUND_A = "Fund A";
     public static String  NAME_FUND_B = "Fund B";
     public static String  NAME_FUND_C = "Fund C";
+    public static String  ID_FUND_A = "1";
     public static List<Fund> getFunds() {
         return Arrays.asList(
                 new Fund("1", "Fund A", new BigDecimal("100"), "Category 1"),
