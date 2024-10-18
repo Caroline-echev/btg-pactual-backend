@@ -77,8 +77,8 @@ public class UserUseCase implements IUserServicePort {
         return subscriptions;
     }
 
-
-    private User getUser(String userId) {
+    @Override
+    public User getUser(String userId) {
         User user = userPersistencePort.findById(userId);
         if(user == null) {
             throw new UserNotFoundException(USER_NOT_FOUND_EXCEPTION_MESSAGE);
