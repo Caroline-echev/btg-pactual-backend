@@ -7,9 +7,11 @@ import org.springframework.context.annotation.Configuration;
 public class CorsConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/api/v1/**")
-                .allowedOrigins("http://localhost:4200") // URL de tu app Angular
-                .allowedMethods("GET", "POST", "PUT", "DELETE")
-                .allowedHeaders("*");
+        registry.addMapping("/**")
+                .allowedOrigins("http://my-angular-frontend-bucket.s3-website-us-east-1.amazonaws.com")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("*")
+                .allowCredentials(true);
     }
+
 }

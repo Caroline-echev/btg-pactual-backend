@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/funds-management.iml" filepath="$PROJECT_DIR$/.idea/funds-management.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/funds-management.funds-management.main~1.iml" filepath="$PROJECT_DIR$/.idea/modules/funds-management.funds-management.main~1.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/btg-pactual-backend.iml" filepath="$PROJECT_DIR$/.idea/btg-pactual-backend.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/funds-management.main.iml" filepath="$PROJECT_DIR$/.idea/modules/funds-management.main.iml" />
     </modules>
   </component>
 </project>

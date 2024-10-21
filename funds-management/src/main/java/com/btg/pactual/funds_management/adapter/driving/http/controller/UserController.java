@@ -13,7 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/user")
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "http://my-angular-frontend-bucket.s3-website-us-east-1.amazonaws.com")
 @RequiredArgsConstructor
 public class UserController {
     private final IUserServicePort userServicePort;

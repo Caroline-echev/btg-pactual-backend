@@ -13,7 +13,7 @@ import static com.btg.pactual.funds_management.adapter.driving.http.util.ApiCons
 
 @RestController
 @RequestMapping("/api/v1/funds/")
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "http://my-angular-frontend-bucket.s3-website-us-east-1.amazonaws.com")
 @RequiredArgsConstructor
 public class FundController {
     private final IFundServicePort fundServicePort;
